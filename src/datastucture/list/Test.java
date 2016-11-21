@@ -1,6 +1,9 @@
 package datastucture.list;
 
+import sort.InertionSort;
+
 import java.util.Iterator;
+import java.util.Queue;
 
 /**
  * ceshi
@@ -56,9 +59,36 @@ public class Test {
     //        }
     //    }
 
+    //    public static void main(String[] args) {
+    //        Calculator calculator = new Calculator();
+    //        String suanshi = "1+2*3/(5+1)+100/25+2^3";
+    //        System.out.println(calculator.caculate(suanshi));
+    //    }
+
+    // 测试队列
     public static void main(String[] args) {
-        Calculator calculator = new Calculator();
-        String suanshi = "1+2*3/(5+1)+100/25+2^3";
-        System.out.println(calculator.caculate(suanshi));
+        MyQueue<Integer> queue = new MyArrayQueue<Integer>();
+        for (int i = 0; i < 8; i++) {
+            System.out.println("i = " + i);
+            queue.enqueue(i);
+        }
+
+        System.out.println("---------------------------------------");
+
+        System.out.println(queue.dequeue());
+        queue.dequeue();
+
+        queue.enqueue(9);
+        queue.enqueue(19);
+        queue.enqueue(119);
+        queue.enqueue(129);
+//        queue.enqueue(139);
+
+        System.out.println("######################");
+        System.out.println("2.3.4.5.6.7.9.19.");
+
+        while (queue.peek() != null) {
+            System.out.printf(queue.dequeue() + ",");
+        }
     }
 }
