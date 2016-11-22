@@ -1,9 +1,7 @@
 package datastucture.list;
 
-import org.omg.CORBA.Any;
-import sun.plugin.javascript.navig.AnchorArray;
-
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -90,6 +88,22 @@ public class MyLinkedList<AnyType> {
         return data;
     }
 
+    public void removeAll(Iterable<? extends AnyType> items) {
+        Iterator<? extends AnyType> iterator = items.iterator();
+        while (iterator.hasNext()) {
+
+            AnyType outer = iterator.next();
+
+            Iterator iterator1 = this.iterator();
+            while (iterator1.hasNext()) {
+                AnyType innerNode = (AnyType) iterator1.next();
+                if (innerNode.equals(outer)) {
+                    iterator1.remove();
+                }
+            }
+        }
+    }
+
     private Node<AnyType> getNode(int idx) {
         if (idx > size() || idx < 0) {
             throw new IndexOutOfBoundsException();
@@ -116,6 +130,9 @@ public class MyLinkedList<AnyType> {
         return node;
     }
 
+    public java.util.Iterator<AnyType> iterator() {
+        return new LinkedListIterator();
+    }
 
     /**
      * 数据节点的模型类
@@ -140,10 +157,6 @@ public class MyLinkedList<AnyType> {
             this.prev = prev;
             this.next = next;
         }
-    }
-
-    public java.util.Iterator<AnyType> iterator() {
-        return new LinkedListIterator();
     }
 
     private class LinkedListIterator implements java.util.Iterator<AnyType> {
