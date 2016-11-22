@@ -9,7 +9,9 @@ public interface MyCircle<AnyType> {
      *
      * @return
      */
-    AnyType getHead();
+    AnyType getNow();
+
+    AnyType get(int idx);
 
     /**
      * 获取环的容量
@@ -22,6 +24,13 @@ public interface MyCircle<AnyType> {
      * 删除当前指向的节点
      */
     AnyType remove();
+
+    /**
+     * 删除指定位置的元素
+     * @param idx
+     * @return
+     */
+    AnyType remove(int idx);
 
     /**
      * 清空环
@@ -40,7 +49,7 @@ public interface MyCircle<AnyType> {
      *
      * @return
      */
-    AnyType itrator();
+    java.util.Iterator<AnyType> itrator();
 
     /**
      * 向环中增加一个元素，增加到环的最后

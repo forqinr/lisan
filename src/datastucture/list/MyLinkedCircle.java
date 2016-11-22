@@ -1,5 +1,8 @@
 package datastucture.list;
 
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+
 /**
  * 用离散形式实现环
  *
@@ -12,10 +15,20 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
     private int theSize;
     private Node<AnyType> head;
     private Node<AnyType> nowItem;
+    private int modCount;
+
+    public MyLinkedCircle() {
+        clear();
+    }
 
     @Override
-    public AnyType getHead() {
+    public AnyType getNow() {
         return nowItem.data;
+    }
+
+    @Override
+    public AnyType get(int idx) {
+        return getNode(idx).data;
     }
 
     @Override
@@ -25,7 +38,61 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
 
     @Override
     public AnyType remove() {
-        return null;
+        if (nowItem == null) {
+            throw new NullPointerException();
+        }
+
+        Node<AnyType> removedNode = nowItem;
+        if (size() > 1) {
+            removedNode.prev.next = removedNode.next;
+            removedNode.next.prev = removedNode.prev;
+
+            nowItem = nowItem.next;
+
+            if (removedNode == head)
+                head = head.next;
+        } else {
+            nowItem = null;
+            head = null;
+        }
+
+        modCount++;
+        theSize--;
+
+        return removedNode.data;
+    }
+
+    @Override
+    public AnyType remove(int idx) {
+        if (idx < 1 || idx > size()) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (isEmpty()) {
+            throw new NullPointerException();
+        }
+
+        Node<AnyType> removedNode = getNode(idx);
+
+        if (size() > 1) {
+            removedNode.prev.next = removedNode.next;
+            removedNode.next.prev = removedNode.prev;
+
+            if (nowItem == removedNode)
+                nowItem = nowItem.next;
+
+            if (removedNode == head)
+                head = head.next;
+        } else {
+            nowItem = null;
+            head = null;
+        }
+
+
+        modCount++;
+        theSize--;
+
+        return removedNode.data;
     }
 
     @Override
@@ -41,8 +108,8 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
     }
 
     @Override
-    public AnyType itrator() {
-        return null;
+    public java.util.Iterator<AnyType> itrator() {
+        return new MyLinkedCircleIterator();
     }
 
     @Override
@@ -57,20 +124,34 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
         }
 
 
-        Node<AnyType> node = new Node<AnyType>(item, null, null);
+        Node<AnyType> newNode = new Node<AnyType>(item, null, null);
 
         if (isEmpty()) {
-            node.next = node;
-            node.prev = node;
-            head = node;
-            nowItem = node;
+            newNode.next = newNode;
+            newNode.prev = newNode;
+            head = newNode;
+            nowItem = newNode;
             theSize++;
+            modCount++;
             return;
         }
 
+        // 此方法经常使用，为了减少遍历，故单独增加了此判断
         if (idx == size()) {
-
+            newNode.prev = head.prev;
+            newNode.next = head;
+            head.prev.next = newNode;
+            head.prev = newNode;
+        } else {
+            nowItem = getNode(idx);
+            newNode.prev = nowItem.prev;
+            newNode.next = nowItem;
+            nowItem.prev.next = newNode;
+            nowItem.prev = newNode;
         }
+
+        theSize++;
+        modCount++;
     }
 
     private Node<AnyType> getNode(int idx) {
@@ -95,6 +176,28 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
 
     @Override
     public void addNow(AnyType item) {
+        if (item == null) {
+            throw new IllegalStateException();
+        }
+
+        Node<AnyType> newNode = new Node<AnyType>(item, null, null);
+
+        if (isEmpty()) {
+            newNode.next = newNode;
+            newNode.prev = newNode;
+            head = newNode;
+        } else {
+            newNode.prev = nowItem.prev;
+            newNode.next = nowItem;
+            nowItem.prev.next = newNode;
+            nowItem.prev = newNode;
+        }
+
+        theSize++;
+        modCount++;
+    }
+
+    private void remove(AnyType item) {
 
     }
 
@@ -108,5 +211,52 @@ public class MyLinkedCircle<AnyType> implements MyCircle<AnyType> {
             this.next = next;
             this.data = data;
         }
+    }
+
+    private class MyLinkedCircleIterator implements java.util.Iterator<AnyType> {
+
+        private Node<AnyType> current = head;
+        private int expectedModCount = modCount;
+        private boolean okToRemove = false;
+
+        @Override
+        public boolean hasNext() {
+            return !isEmpty();
+        }
+
+        @Override
+        public AnyType next() {
+            if (expectedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            AnyType nextItem = current.data;
+            current = current.next;
+            okToRemove = true;
+            return nextItem;
+        }
+
+        @Override
+        public void remove() {
+            if (expectedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+
+            if (!okToRemove) {
+                throw new IllegalStateException();
+            }
+
+            nowItem = current.prev;
+
+            MyLinkedCircle.this.remove();
+
+            okToRemove = false;
+            expectedModCount++;
+        }
+
     }
 }
