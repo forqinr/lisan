@@ -23,6 +23,30 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         clear();
     }
 
+    public static void main(String[] args) {
+        MyArrayList<Integer> testList = new MyArrayList<Integer>();
+
+        for (int i = 0; i < 15; i++) {
+            testList.add(i);
+        }
+
+        for (int i = 0; i < testList.size(); i++) {
+            System.out.printf(testList.get(i) + ",");
+        }
+
+        System.out.println();
+
+        Iterator<Integer> iterator = testList.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next() % 2 == 0) {
+                iterator.remove();
+            }
+        }
+        for (int i = 0; i < testList.size(); i++) {
+            System.out.printf(testList.get(i) + ",");
+        }
+    }
+
     public void clear() {
         theSize = 0;
         ensureCapacity(DEFAULT_LIST_SIZE);
@@ -105,14 +129,20 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         return oldItem;
     }
 
-
     @Override
     public Iterator<AnyType> iterator() {
         return new ArrayListIterator();
     }
 
-    private class ArrayListIterator
-            implements java.util.Iterator<AnyType> {
+    public void addAll(Iterable<? extends AnyType> items) {
+        Iterator<? extends AnyType> iterator = items.iterator();
+        while (iterator.hasNext()) {
+            add(iterator.next());
+        }
+    }
+
+    private class ArrayListIterator implements java.util.Iterator<AnyType> {
+
         private int current = 0;
 
         @Override
@@ -131,30 +161,6 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         @Override
         public void remove() {
             MyArrayList.this.remove(--current);
-        }
-    }
-
-    public static void main(String[] args) {
-        MyArrayList<Integer> testList = new MyArrayList<Integer>();
-
-        for (int i = 0; i < 15; i++) {
-            testList.add(i);
-        }
-
-        for (int i = 0; i < testList.size(); i++) {
-            System.out.printf(testList.get(i) + ",");
-        }
-
-        System.out.println();
-
-        Iterator<Integer> iterator = testList.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next() % 2 == 0) {
-                iterator.remove();
-            }
-        }
-        for (int i = 0; i < testList.size(); i++) {
-            System.out.printf(testList.get(i) + ",");
         }
     }
 }
