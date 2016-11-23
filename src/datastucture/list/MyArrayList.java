@@ -158,7 +158,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
                 // 如果刚才执行的是next操作，则需要对当前游标的上一个元素删除
                 MyArrayList.this.remove(--current);
             } else {
-                MyArrayList.this.remove(current);
+                MyArrayList.this.remove(current--);
             }
         }
 
@@ -199,7 +199,8 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
         @Override
         public void add(AnyType anyType) {
-            MyArrayList.this.add(anyType, current);
+            // 此处current++才能指向原始值
+            MyArrayList.this.add(anyType, current++);
         }
     }
 
