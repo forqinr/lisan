@@ -112,13 +112,14 @@ public class MyLinkedList<AnyType> {
         Node<AnyType> node;
 
         if (idx < size() / 2) {
-            Node<AnyType> p = beginMarker;
+            Node<AnyType> p = beginMarker.next;
             for (int i = 0; i < idx; i++) {
                 p = p.next;
             }
 
             node = p;
         } else {
+            // 因为索引元素是0到size()-1，所以if中的元素的指针直接就是beginMarker.next，此处是endMarker，而不是endMarker.prev
             Node<AnyType> p = endMarker;
             for (int i = size(); i > idx; i--) {
                 p = p.prev;
@@ -131,6 +132,10 @@ public class MyLinkedList<AnyType> {
     }
 
     public java.util.Iterator<AnyType> iterator() {
+        return new LinkedListIterator();
+    }
+
+    public java.util.ListIterator<AnyType> listIterator() {
         return new LinkedListIterator();
     }
 
@@ -159,15 +164,17 @@ public class MyLinkedList<AnyType> {
         }
     }
 
-    private class LinkedListIterator implements java.util.Iterator<AnyType> {
+    private class LinkedListIterator implements java.util.ListIterator<AnyType> {
 
         private Node<AnyType> current = beginMarker.next;
         private int expectedModCount = modCount;
         private boolean okToRemove = false;
 
+        private boolean isNextOption = false;
+
         @Override
         public boolean hasNext() {
-            return current.next != endMarker;
+            return current != endMarker;
         }
 
         @Override
@@ -182,6 +189,9 @@ public class MyLinkedList<AnyType> {
             AnyType nextItem = current.data;
             current = current.next;
             okToRemove = true;
+
+            isNextOption = true;
+
             return nextItem;
         }
 
@@ -200,6 +210,86 @@ public class MyLinkedList<AnyType> {
             expectedModCount++;
         }
 
+        @Override
+        public boolean hasPrevious() {
+            return current.prev != beginMarker;
+        }
 
+        @Override
+        public AnyType previous() {
+            if (expectedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+
+            if (!hasPrevious()) {
+                throw new NoSuchElementException();
+            }
+
+            current = current.prev;
+            AnyType previousItem = current.data;
+            okToRemove = true;
+
+            isNextOption = true;
+
+            return previousItem;
+        }
+
+        @Override
+        public int nextIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int previousIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(AnyType anyType) {
+            if (isNextOption) {
+                current.prev.data = anyType;
+            } else {
+                current.data = anyType;
+            }
+        }
+
+        @Override
+        public void add(AnyType anyType) {
+            if (expectedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+            //
+            //if (!okToRemove) {
+            //    throw new IllegalStateException();
+            //}
+
+            //Node<AnyType> p = new Node<AnyType>(anyType, current.prev, current);
+            Node<AnyType> p = new Node<AnyType>(anyType, null, null);
+            if (isNextOption) {
+                // 正向遍历的add操作是放在最后一次看到的元素的后面，同时下一次next迭代可以看到
+                p.next = current;
+                p.prev = current.prev;
+                current.prev.next = p;
+                current.prev = p;
+            } else {
+                // 逆向遍历的add操作是放在最后一次看到的元素的前面，同时下一次previous迭代可以看到
+                p.next = current;
+                p.prev = current.prev;
+                current.prev.next = p;
+                current.prev = p;
+            }
+            //很明显上述if分支里的代码是一样的，可以合并，同时p初始化时，指针可以从null直接变为current对应的变量
+            //p.next = current;
+            //p.prev = current.prev;
+            current.prev.next = p;
+            current.prev = p;
+
+            modCount++;
+            expectedModCount++;
+
+            theSize++;
+
+            okToRemove = false;
+        }
     }
 }
