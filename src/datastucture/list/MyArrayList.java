@@ -1,5 +1,8 @@
 package datastucture.list;
 
+import org.junit.*;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -122,6 +125,13 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         }
     }
 
+    public void print() {
+        for (int i = 0; i < size(); i++) {
+            System.out.printf(theItems[i].toString() + " ");
+        }
+        System.out.println();
+    }
+
     private class ArrayListIterator implements java.util.ListIterator<AnyType> {
 
         private int current = 0;
@@ -191,5 +201,44 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         public void add(AnyType anyType) {
             MyArrayList.this.add(anyType, current);
         }
+    }
+
+    @org.junit.Test
+    public void test() {
+        MyArrayList<Integer> list = new MyArrayList<Integer>();
+        for (int i = 0; i < 10; i++) {
+            list.add(i);
+        }
+        list.print();
+
+        ListIterator<Integer> itr = list.listIterator();
+        //        itr.add(-1);
+        //        list.print();
+
+        itr.next();
+        itr.add(90);
+        list.print();
+
+        while (itr.hasNext()) itr.next();
+
+        itr.add(11);
+        list.print();
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        ArrayList<Integer> jdkList = new ArrayList<Integer>();
+        for (int i = 0; i < 10; i++) {
+            jdkList.add(i);
+        }
+        ListIterator<Integer> jdkItr = jdkList.listIterator();
+        while (jdkItr.hasNext()) {
+            jdkItr.next();
+        }
+
+        for (int i = 0; i < jdkList.size(); i++) {
+            System.out.print(jdkList.get(i) + " ");
+        }
+        System.out.println();
+        System.out.println(jdkItr.previous());
+        jdkItr.add(999);
+        System.out.println(jdkList.toString());
     }
 }

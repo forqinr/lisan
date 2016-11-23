@@ -2,6 +2,7 @@ package datastucture.list;
 
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
 public class MyLinkedList<AnyType> {
     private int theSize = 0;
     private int modCount = 0;
+
     // 总是保留head和tail节点，可以省去很多编码上的判断，以及去除头尾节点时指针的移动操作。
     private Node<AnyType> beginMarker = null;
     private Node<AnyType> endMarker = null;
@@ -263,24 +265,24 @@ public class MyLinkedList<AnyType> {
             //    throw new IllegalStateException();
             //}
 
-            //Node<AnyType> p = new Node<AnyType>(anyType, current.prev, current);
-            Node<AnyType> p = new Node<AnyType>(anyType, null, null);
-            if (isNextOption) {
-                // 正向遍历的add操作是放在最后一次看到的元素的后面，同时下一次next迭代可以看到
-                p.next = current;
-                p.prev = current.prev;
-                current.prev.next = p;
-                current.prev = p;
-            } else {
-                // 逆向遍历的add操作是放在最后一次看到的元素的前面，同时下一次previous迭代可以看到
-                p.next = current;
-                p.prev = current.prev;
-                current.prev.next = p;
-                current.prev = p;
-            }
+            Node<AnyType> p = new Node<AnyType>(anyType, current.prev, current);
+            //            Node<AnyType> p = new Node<AnyType>(anyType, null, null);
+            //            if (isNextOption) {
+            //                // 正向遍历的add操作是放在最后一次看到的元素的后面，同时下一次next迭代可以看到
+            //                p.next = current;
+            //                p.prev = current.prev;
+            //                current.prev.next = p;
+            //                current.prev = p;
+            //            } else {
+            //                // 逆向遍历的add操作是放在最后一次看到的元素的前面，同时下一次previous迭代可以看到
+            //                p.next = current;
+            //                p.prev = current.prev;
+            //                current.prev.next = p;
+            //                current.prev = p;
+            //            }
             //很明显上述if分支里的代码是一样的，可以合并，同时p初始化时，指针可以从null直接变为current对应的变量
-            //p.next = current;
-            //p.prev = current.prev;
+            //            p.next = current;
+            //            p.prev = current.prev;
             current.prev.next = p;
             current.prev = p;
 
@@ -288,8 +290,58 @@ public class MyLinkedList<AnyType> {
             expectedModCount++;
 
             theSize++;
-
-            okToRemove = false;
         }
+    }
+
+    @org.junit.Test
+    public void test() {
+        MyLinkedList<Integer> list = new MyLinkedList<Integer>();
+        for (int i = 0; i < 10; i++) {
+            list.add(i);
+        }
+
+        ListIterator<Integer> ltr = list.listIterator();
+        // 测试迭代器初始化时直接插入数据
+        ltr.add(-1);
+        for (int i = 0; i < list.size(); i++) {
+            System.out.printf(list.get(i) + " ");
+        }
+        System.out.println();
+        // 测试游标指向结尾时插入数据
+        while (ltr.hasNext()) {
+            ltr.next();
+        }
+        ltr.add(99);
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.printf(list.get(i) + " ");
+        }
+        System.out.println();
+
+        //        测试游标在最后一个元素后面，然后执行一次previous()操作，看是否可以正确的按照逆序的情况插入数据
+        System.out.println("previous:" + ltr.previous());
+        ltr.add(98);
+        for (int i = 0; i < list.size(); i++) {
+            System.out.printf(list.get(i) + " ");
+        }
+        System.out.println();
+
+        while (ltr.hasPrevious()) {
+            ltr.previous();
+        }
+
+        // 查看是否可以在中间插入数据
+        while (ltr.hasNext()) {
+            if (ltr.next() == 8) {
+                ltr.add(888);
+                break;
+            }
+        }
+
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.printf(list.get(i) + " ");
+        }
+        System.out.println();
     }
 }
