@@ -1,5 +1,7 @@
 package datastucture.list;
 
+import org.junit.*;
+
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -141,6 +143,34 @@ public class MyLinkedList<AnyType> {
         return new LinkedListIterator();
     }
 
+    public void splice(Iterator<AnyType> itr, MyLinkedList<? extends AnyType> lst) {
+        if (itr == null || lst == null || lst.size() == 0) {
+            return;
+        }
+
+        Node<AnyType> node = null;
+        // 先找到itr当前指向的位置。因为itr不是ListIterator声明，故不能调用previous来调整偏差
+        if (!itr.hasNext()) {
+            node = endMarker;
+        } else {
+            // Iterator的三个方法中，只有一个能返回一些信息，那就是next，然而返回的是一个值的引用，只能通过这个引用判断当前索引的位置，这实际上就是由标的位置。
+            AnyType at = itr.next();
+            for (int i = 0; i < size(); i++) {
+                if (get(i) == at) {
+                    node = getNode(i);
+                    break;
+                }
+            }
+        }
+
+        Iterator<? extends AnyType> iterator = lst.iterator();
+        while (iterator.hasNext()) {
+            addBefore(node, iterator.next());
+            iterator.remove();
+        }
+
+    }
+
     /**
      * 数据节点的模型类
      * 嵌套类
@@ -265,31 +295,35 @@ public class MyLinkedList<AnyType> {
             //    throw new IllegalStateException();
             //}
 
-            Node<AnyType> p = new Node<AnyType>(anyType, current.prev, current);
-            //            Node<AnyType> p = new Node<AnyType>(anyType, null, null);
-            //            if (isNextOption) {
-            //                // 正向遍历的add操作是放在最后一次看到的元素的后面，同时下一次next迭代可以看到
-            //                p.next = current;
-            //                p.prev = current.prev;
-            //                current.prev.next = p;
-            //                current.prev = p;
-            //            } else {
-            //                // 逆向遍历的add操作是放在最后一次看到的元素的前面，同时下一次previous迭代可以看到
-            //                p.next = current;
-            //                p.prev = current.prev;
-            //                current.prev.next = p;
-            //                current.prev = p;
-            //            }
-            //很明显上述if分支里的代码是一样的，可以合并，同时p初始化时，指针可以从null直接变为current对应的变量
-            //            p.next = current;
-            //            p.prev = current.prev;
-            current.prev.next = p;
-            current.prev = p;
-
-            modCount++;
+            // 在有游标，有数据的情况下，要掉外层类的方法
+            MyLinkedList.this.addBefore(current, anyType);
             expectedModCount++;
 
-            theSize++;
+            //            Node<AnyType> p = new Node<AnyType>(anyType, current.prev, current);
+            //            //            Node<AnyType> p = new Node<AnyType>(anyType, null, null);
+            //            //            if (isNextOption) {
+            //            //                // 正向遍历的add操作是放在最后一次看到的元素的后面，同时下一次next迭代可以看到
+            //            //                p.next = current;
+            //            //                p.prev = current.prev;
+            //            //                current.prev.next = p;
+            //            //                current.prev = p;
+            //            //            } else {
+            //            //                // 逆向遍历的add操作是放在最后一次看到的元素的前面，同时下一次previous迭代可以看到
+            //            //                p.next = current;
+            //            //                p.prev = current.prev;
+            //            //                current.prev.next = p;
+            //            //                current.prev = p;
+            //            //            }
+            //            //很明显上述if分支里的代码是一样的，可以合并，同时p初始化时，指针可以从null直接变为current对应的变量
+            //            //            p.next = current;
+            //            //            p.prev = current.prev;
+            //            current.prev.next = p;
+            //            current.prev = p;
+            //
+            //            modCount++;
+            //            expectedModCount++;
+            //
+            //            theSize++;
         }
     }
 
