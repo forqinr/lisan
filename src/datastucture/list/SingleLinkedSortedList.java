@@ -1,7 +1,5 @@
 package datastucture.list;
 
-import org.junit.*;
-
 /**
  * 始终排序的单链表
  *
@@ -38,14 +36,14 @@ public class SingleLinkedSortedList<AnyType extends Comparable<AnyType>> {
      * 测试对象是否包含在链表中
      *
      * @param x 被测试对象
-     *
      * @return 是否包含
      */
     public boolean contains(AnyType x) {
         Node<AnyType> p = head.next;
 
-        while (p != null) {
-            if (x.compareTo(p.data) == 0) {
+        // 使用小于等于，可以防止数据量过大时产生无限的对比
+        while (p != null && x.compareTo(p.data) <= 0) {
+            if (p.data.equals(x)) {
                 return true;
             }
             p = p.next;
