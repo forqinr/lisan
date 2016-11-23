@@ -1,6 +1,7 @@
 package datastucture.list;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -21,30 +22,6 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
     public MyArrayList() {
         clear();
-    }
-
-    public static void main(String[] args) {
-        MyArrayList<Integer> testList = new MyArrayList<Integer>();
-
-        for (int i = 0; i < 15; i++) {
-            testList.add(i);
-        }
-
-        for (int i = 0; i < testList.size(); i++) {
-            System.out.printf(testList.get(i) + ",");
-        }
-
-        System.out.println();
-
-        Iterator<Integer> iterator = testList.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next() % 2 == 0) {
-                iterator.remove();
-            }
-        }
-        for (int i = 0; i < testList.size(); i++) {
-            System.out.printf(testList.get(i) + ",");
-        }
     }
 
     public void clear() {
@@ -115,22 +92,26 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         theItems[idx] = newItem;
 
         theSize++;
+
     }
 
     public AnyType remove(int idx) {
         AnyType oldItem = theItems[idx];
 
-        for (int i = idx; i < size(); i++) {
+        for (int i = idx; i < size() - 1; i++) {
             theItems[i] = theItems[i + 1];
         }
 
         theSize--;
-
         return oldItem;
     }
 
     @Override
     public Iterator<AnyType> iterator() {
+        return new ArrayListIterator();
+    }
+
+    public ListIterator<AnyType> listIterator() {
         return new ArrayListIterator();
     }
 
@@ -141,9 +122,11 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         }
     }
 
-    private class ArrayListIterator implements java.util.Iterator<AnyType> {
+    private class ArrayListIterator implements java.util.ListIterator<AnyType> {
 
         private int current = 0;
+        // 判断刚才是否执行了next操作。如果是previous，则返回false。
+        private boolean isNextOpration = false;
 
         @Override
         public boolean hasNext() {
@@ -155,12 +138,58 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
+            isNextOpration = true;
             return theItems[current++];
         }
 
         @Override
         public void remove() {
-            MyArrayList.this.remove(--current);
+            if (isNextOpration) {
+                // 如果刚才执行的是next操作，则需要对当前游标的上一个元素删除
+                MyArrayList.this.remove(--current);
+            } else {
+                MyArrayList.this.remove(current);
+            }
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return current > 0;
+        }
+
+        @Override
+        public AnyType previous() {
+            if (!hasPrevious()) {
+                throw new NoSuchElementException();
+            }
+
+            isNextOpration = false;
+
+            return theItems[--current];
+        }
+
+        @Override
+        public int nextIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int previousIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(AnyType anyType) {
+            if (isNextOpration) {
+                MyArrayList.this.set(anyType, --current);
+            } else {
+                MyArrayList.this.set(anyType, ++current);
+            }
+        }
+
+        @Override
+        public void add(AnyType anyType) {
+            MyArrayList.this.add(anyType, current);
         }
     }
 }
