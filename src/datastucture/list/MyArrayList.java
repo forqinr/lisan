@@ -1,8 +1,7 @@
 package datastucture.list;
 
-import org.junit.*;
-
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -23,12 +22,15 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
     // List内置数组的引用
     private AnyType[] theItems;
 
+    private int modCount = 0;
+
     public MyArrayList() {
         clear();
     }
 
     public void clear() {
         theSize = 0;
+        modCount++;
         ensureCapacity(DEFAULT_LIST_SIZE);
     }
 
@@ -93,7 +95,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         }
 
         theItems[idx] = newItem;
-
+        modCount++;
         theSize++;
 
     }
@@ -105,6 +107,7 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
             theItems[i] = theItems[i + 1];
         }
 
+        modCount++;
         theSize--;
         return oldItem;
     }
@@ -132,11 +135,19 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         System.out.println();
     }
 
+    public Iterator<AnyType> reverseIterator() {
+        return new ArrayListReverseIterator();
+    }
+
     private class ArrayListIterator implements java.util.ListIterator<AnyType> {
 
         private int current = 0;
         // 判断刚才是否执行了next操作。如果是previous，则返回false。
         private boolean isNextOpration = false;
+
+        private int exceptedModCount = modCount;
+
+        private boolean okToRemove = false;
 
         @Override
         public boolean hasNext() {
@@ -145,21 +156,35 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
 
         @Override
         public AnyType next() {
+            if (exceptedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
             isNextOpration = true;
+            okToRemove = true;
             return theItems[current++];
         }
 
         @Override
         public void remove() {
+            if (exceptedModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+
+            if (!okToRemove) {
+                throw new IllegalStateException();
+            }
             if (isNextOpration) {
                 // 如果刚才执行的是next操作，则需要对当前游标的上一个元素删除
                 MyArrayList.this.remove(--current);
             } else {
                 MyArrayList.this.remove(current--);
             }
+            exceptedModCount++;
+            okToRemove = false;
         }
 
         @Override
@@ -201,6 +226,31 @@ public class MyArrayList<AnyType> implements Iterable<AnyType> {
         public void add(AnyType anyType) {
             // 此处current++才能指向原始值
             MyArrayList.this.add(anyType, current++);
+            exceptedModCount++;
+        }
+    }
+
+    private class ArrayListReverseIterator implements Iterator<AnyType> {
+
+        private int current = size();
+
+        @Override
+        public boolean hasNext() {
+            return current > 0;
+        }
+
+        @Override
+        public AnyType next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            return theItems[--current];
+        }
+
+        @Override
+        public void remove() {
+            MyArrayList.this.remove(current--);
         }
     }
 
