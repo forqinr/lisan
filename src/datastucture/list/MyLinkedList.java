@@ -1,7 +1,5 @@
 package datastucture.list;
 
-import org.junit.*;
-
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -106,6 +104,47 @@ public class MyLinkedList<AnyType> {
                 }
             }
         }
+    }
+
+    public void addFirst(AnyType x) {
+        addBefore(beginMarker.next, x);
+    }
+
+    public void addLast(AnyType x) {
+        addBefore(endMarker, x);
+    }
+
+    public AnyType getFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return get(0);
+    }
+
+    public AnyType getLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return get(size() - 1);
+    }
+
+    public AnyType removeFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return remove(beginMarker.next);
+    }
+
+
+    public AnyType removeLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return remove(endMarker.prev);
     }
 
     private Node<AnyType> getNode(int idx) {
