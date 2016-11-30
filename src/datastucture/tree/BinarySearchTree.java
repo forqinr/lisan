@@ -42,8 +42,22 @@ public class BinarySearchTree<AnyType extends Comparable<? super AnyType>> {
         return findMin(root).element;
     }
 
-    private BinaryNode<AnyType> findMin(BinaryNode<AnyType> root) {
-        return null;
+    /**
+     * @param t
+     *
+     * @return
+     */
+    private BinaryNode<AnyType> findMin(BinaryNode<AnyType> t) {
+        // 先判断例外情形
+        if (t == null) {
+            return null;
+        } else if (t.left == null) {
+            // 然后判断基准情形
+            return t;
+        }
+
+        // 递归推进
+        return findMin(t.left);
     }
 
     public AnyType findMax() {
@@ -55,7 +69,13 @@ public class BinarySearchTree<AnyType extends Comparable<? super AnyType>> {
     }
 
     private BinaryNode<AnyType> findMax(BinaryNode<AnyType> root) {
-        return null;
+        if (root == null) {
+            return null;
+        } else if (root.right == null) {
+            return root;
+        }
+
+        return findMax(root.right);
     }
 
     /**
@@ -63,6 +83,7 @@ public class BinarySearchTree<AnyType extends Comparable<? super AnyType>> {
      *
      * @param x 目标数据
      * @param t 子树
+     *
      * @return 是否有一个节点匹配搜索的数据
      */
     private boolean contains(AnyType x, BinaryNode<AnyType> t) {
@@ -87,16 +108,49 @@ public class BinarySearchTree<AnyType extends Comparable<? super AnyType>> {
         root = insert(x, root);
     }
 
-    private BinaryNode<AnyType> insert(AnyType x, BinaryNode<AnyType> root) {
-        return null;
+    private BinaryNode<AnyType> insert(AnyType x, BinaryNode<AnyType> t) {
+        if (t == null) {
+            return new BinaryNode<AnyType>(x);
+        }
+
+        int compareResult = t.element.compareTo(x);
+        if (compareResult < 0) {
+            t.right = insert(x, t.right);
+        } else if (compareResult > 0) {
+            t.left = insert(x, t.left);
+        } else {
+            ;// do nothing
+        }
+        return t;
     }
 
     public void remove(AnyType x) {
         root = remove(x, root);
     }
 
-    private BinaryNode<AnyType> remove(AnyType x, BinaryNode<AnyType> root) {
-        return null;
+    private BinaryNode<AnyType> remove(AnyType x, BinaryNode<AnyType> t) {
+        if (t == null) {
+            return t;
+        }
+
+        int compareResult = x.compareTo(t.element);
+
+        if (compareResult < 0) {
+            // 如果小于，就从左子树上查找并移除
+            t.left = remove(x, t.left);
+        } else if (compareResult > 0) {
+            // 如果大于，就从右子树上查找并移除
+            t.right = remove(x, t.right);
+        } else if (t.right != null && t.left != null) {
+            // 如果两个子树都非空，就递归的用右子树中的最小值替代当前节点，然后递归的删除对应的节点
+            t.element = findMin(t.right).element;
+            t.right = remove(t.element, t.right);
+        } else {
+            // 如果只有一个节点，就让这个指针指向他的孩子，从而让他自己失去指向，离开树
+            t = (t.left != null) ? t.left : t.right;
+        }
+
+        return t;
     }
 
     public void printTree() {
