@@ -10,6 +10,12 @@ import java.io.File;
  */
 
 public class FileList {
+    public static void main(String args[]) {
+        FileList L = new FileList();
+        File f = new File("E:\\book");
+        L.list(f);
+    }
+
     public void list(File f) {
         list(f, 0);
     }
@@ -32,11 +38,5 @@ public class FileList {
         } else {
             System.out.println(f.getName() + "^" + f.length());
         }
-    }
-
-    public static void main(String args[]) {
-        FileList L = new FileList();
-        File f = new File("E:\\book");
-        L.list(f);
     }
 }
