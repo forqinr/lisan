@@ -334,7 +334,7 @@ public class MyLinkedList<AnyType> {
             //    throw new IllegalStateException();
             //}
 
-            // 在有游标，有数据的情况下，要掉外层类的方法
+            // 在有游标，有数据的情况下，要调外层类的方法
             MyLinkedList.this.addBefore(current, anyType);
             expectedModCount++;
 

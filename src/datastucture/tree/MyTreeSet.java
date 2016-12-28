@@ -70,10 +70,11 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
     }
 
     public AnyType findMax() throws UnderflowException {
-        if (isEmpty())
+        if (isEmpty()) {
             throw new UnderflowException();
-        else
+        } else {
             return findMax(root).element;
+        }
     }
 
     private Node<AnyType> findMax(Node<AnyType> t) {
@@ -118,12 +119,13 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
 
         int compareResult = x.compareTo(t.element);
 
-        if (compareResult < 0)
+        if (compareResult < 0) {
             t.left = insert(x, t.left, t);
-        else if (compareResult > 0)
+        } else if (compareResult > 0) {
             t.right = insert(x, t.right, t);
-        else
+        } else {
             ; // duplicate
+        }
 
         return t;
     }
@@ -135,7 +137,6 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
 
         if (t == null) {
             t = new Node<AnyType>(x);
-            theSize++;
             return true;
         } else if (x.compareTo(t.element) < 0) {
             return add(x, t.left);
@@ -160,6 +161,7 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
      *
      * @param x 要删除的值
      * @param t 子树
+     *
      * @return 删除结果
      */
     private Node<AnyType> remove(Node<AnyType> t, AnyType x) {
@@ -170,7 +172,7 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
             t.right = remove(t.right, x);
         } else if (t.left != null && t.right != null) {
             // 用该树的右子树的最小节点代替该节点
-            t.element = findMin(t.right);
+            t = findMin(t.right);
             // 递归的删除右子树上代替该节点的节点
             t.right = remove(t.right, t.element);
         } else {
@@ -185,6 +187,7 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
      * 寻找一颗子树的最小值
      *
      * @param t
+     *
      * @return
      */
     private Node<AnyType> findMin(Node<AnyType> t) {
@@ -241,12 +244,11 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
     @Override
     public void clear() {
         root = null;
-        theSize = 0;
     }
 
-    @Override
-    public void remove() {
-        root = remove( x, root );
+
+    public void remove(AnyType x) {
+        root = remove(root, x);
     }
 
     private static class Node<AnyType> {
@@ -271,7 +273,7 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
 
     private class MyTreeSetIterator implements java.util.Iterator<AnyType> {
         // 标记当前指针（迭代器的基本功能）
-        private Node<AnyType> current = findMax(root);
+        private Node<AnyType> current = findMin(root);
         // 上一个指针
         private Node<AnyType> previous;
         // 操作计数器，防止出现主类和内部类操作不一样的情况
@@ -286,43 +288,67 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
             return !atEnd;
         }
 
+        /**
+         * 这个迭代器的实现是按照从小到大的（从最左边的子节点到最右边的子节点）顺序进行遍历推进的。
+         * 这个实现中，保留了父节点的引用，没有用线索树
+         *
+         * @return 当前指向的节点对应的值
+         */
         @Override
         public AnyType next() {
             if (modCount != expectedModCount)
-                // 当方法检测到对象的并发修改，但不允许这种修改时，抛出此异常。
+            // 当方法检测到对象的并发修改，但不允许这种修改时，抛出此异常。
+            {
                 throw new java.util.ConcurrentModificationException();
-            if (!hasNext())
+            }
+            if (!hasNext()) {
                 throw new java.util.NoSuchElementException();
+            }
 
             // 要返回的元素
             AnyType nextItem = current.element;
+
+            // 从该方法的开始到这一行的所有内容，是所有实现迭代器的类的共同的地方。即首先验证，然后保留当前指针所指向的元素
+
             // 记录当前指针
             previous = current;
 
-            // if there is a right child, next node is min in right subtree
+            // 如果当前节点有右子树，那么下一个遍历的开始就是该右子树上的最小值
             if (current.right != null) {
                 current = findMin(current.right);
             } else {
-                // else, find ancestor that it is left of
+                // 否则，寻找左子树的祖先节点
+
+                // 保留当前节点的位置
                 Node<AnyType> child = current;
+                // 当前节点依赖指向父节点的指针，进行推进
                 current = current.parent;
+
+                // 当前节点不为空，且其刚才标记的位置（child）不是其左儿子，说明是从其右儿子推进上来的，但是其本身已经遍历完毕，故继续推进
                 while (current != null && current.left != child) {
                     child = current;
                     current = current.parent;
                 }
-                if (current == null)
+
+                // 推进到最后时，标记为已经到最后
+                if (current == null) {
                     atEnd = true;
+                }
             }
+
+            // 这行以下也是所有的迭代器共有的。首先标记可删除标记为true，然后返回推进前所标记的节点的值
             okToRemove = true;
             return nextItem;
         }
 
         @Override
         public void remove() {
-            if (modCount != expectedModCount)
+            if (modCount != expectedModCount) {
                 throw new java.util.ConcurrentModificationException();
-            if (!okToRemove)
+            }
+            if (!okToRemove) {
                 throw new IllegalStateException();
+            }
 
             MyTreeSet.this.remove(previous.element);
 
