@@ -22,8 +22,8 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
     }
 
     public void makeEmpty() {
-        root = null;
         modCount++;
+        root = null;
     }
 
     @Override
@@ -161,10 +161,11 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
      *
      * @param x 要删除的值
      * @param t 子树
-     *
      * @return 删除结果
      */
     private Node<AnyType> remove(Node<AnyType> t, AnyType x) {
+        if (t == null)
+            return t; // not found
 
         if (x.compareTo(t.element) < 0) {
             t.left = remove(t.left, x);
@@ -172,12 +173,17 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
             t.right = remove(t.right, x);
         } else if (t.left != null && t.right != null) {
             // 用该树的右子树的最小节点代替该节点
-            t = findMin(t.right);
+            t.element = findMin(t.right).element;
             // 递归的删除右子树上代替该节点的节点
             t.right = remove(t.right, t.element);
         } else {
             // 只有1个子树的情况或者没有子树的情况，处理就很简单了
-            t = (t.left != null) ? t.left : t.right;
+            modCount++;
+            Node<AnyType> oneChild;
+
+            oneChild = (t.left != null) ? t.left : t.right;
+            oneChild.parent = t.parent;// update parent link
+            t = oneChild;
         }
 
         return t;
@@ -187,20 +193,16 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
      * 寻找一颗子树的最小值
      *
      * @param t
-     *
      * @return
      */
     private Node<AnyType> findMin(Node<AnyType> t) {
         if (t == null) {
             return null;
-        }
-
-        if (t.left != null) {
-            return findMin(t.left);
-        } else {
+        } else if (t.left == null) {
             return t;
         }
 
+        return findMin(t.left);
     }
 
     @Override
@@ -249,6 +251,22 @@ public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements S
 
     public void remove(AnyType x) {
         root = remove(root, x);
+    }
+
+    public void printTree() {
+        if (isEmpty()) {
+            System.out.println("Empty Tree");
+        } else {
+            printTree(root);
+        }
+    }
+
+    private void printTree(Node<AnyType> t) {
+        if (t != null) {
+            printTree(t.left);
+            System.out.println(t.element);
+            printTree(t.right);
+        }
     }
 
     private static class Node<AnyType> {
