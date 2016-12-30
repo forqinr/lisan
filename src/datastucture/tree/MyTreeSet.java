@@ -13,9 +13,8 @@ import java.util.Set;
  */
 public class MyTreeSet<AnyType extends Comparable<? super AnyType>> implements Set<AnyType> {
 
-    private Node<AnyType> root;
-    //private int theSize;
-    private int modCount;
+    private Node<AnyType> root = null;
+    private int modCount = 0;
 
     public MyTreeSet() {
         root = null;
