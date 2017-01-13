@@ -38,7 +38,10 @@ public class SeparateChainingHashTable<AnyType> {
      * @return
      */
     private static int nextPrime(int n) {
-        return 0;
+        while (!isPrime(n)) {
+            n++;
+        }
+        return n;
     }
 
     /**
