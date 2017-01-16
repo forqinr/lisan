@@ -76,7 +76,7 @@ public class QuadraticProbingHashTable2<AnyType> {
         int currentPos = findPos(x);
         if (isActive(currentPos)) {
             array[currentPos].isActive = false;
-            currentSize--;
+            // currentSize--;
         }
     }
 
