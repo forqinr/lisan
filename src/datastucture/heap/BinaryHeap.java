@@ -1,5 +1,9 @@
 package datastucture.heap;
 
+import java.util.Arrays;
+
+import datastucture.tree.UnderflowException;
+
 /**
  * 堆的数组实现
  * <p/>
@@ -20,15 +24,47 @@ public class BinaryHeap<AnyType extends Comparable<? super AnyType>> {
     private AnyType[] array;
 
     public BinaryHeap() {
+        buildHeap();
     }
 
     public BinaryHeap(int capacity) {
-        this.currentSize = capacity;
+        array = (AnyType[]) new Object[capacity];
+        currentSize = 0;
     }
 
     public BinaryHeap(AnyType[] items) {
-        this.array = items;
+        array = (AnyType[]) new Object[items.length * 2];
+
+        for (int i = 0; i < items.length; i++) {
+            // 假设items的0处存有值
+            array[i + 1] = items[i];
+        }
+        currentSize = items.length;
     }
+
+    /**
+     * 插入到有限队列（堆），同时保持堆序
+     * 允许重复
+     *
+     * @param x 要插入的元素
+     */
+    public void insert(AnyType x) {
+        // 因为下标0处是不存储元素的，所以currentSize最大为array.length - 1
+        if (currentSize == array.length - 1) {
+            enlargeArray(array.length * 2 + 1);
+        }
+
+        // 找到下一个可用的空穴
+        int hole = ++currentSize;
+
+        // 在穴坐标小于等于1或者x比他的父节点小时，停止循环。如果继续循环，则执行上滤，即其父节点下沉到当前穴
+        for (; hole > 1 && x.compareTo(array[hole / 2]) < 0; hole /= 2) {
+            array[hole] = array[hole / 2];
+        }
+
+        array[hole] = x;
+    }
+
 
     public void insertByRecursion(AnyType x) {
         if (array.length - 1 == currentSize) {
@@ -64,8 +100,21 @@ public class BinaryHeap<AnyType extends Comparable<? super AnyType>> {
         }
     }
 
-    public AnyType deleteMin() {
-        return null;
+    /**
+     * 删除最小元素
+     *
+     * @return
+     * @throws UnderflowException
+     */
+    public AnyType deleteMin() throws UnderflowException {
+        if (isEmpty()) {
+            throw new UnderflowException();
+        }
+
+        AnyType minItem = findMin();
+        array[1] = array[currentSize--];
+        percolateDown(1);
+        return minItem;
     }
 
     public boolean isEmpty() {
@@ -73,14 +122,52 @@ public class BinaryHeap<AnyType extends Comparable<? super AnyType>> {
     }
 
     public void makeEmpty() {
+        currentSize = 0;
+        Arrays.fill(array, null);
     }
 
     private void percolateDown(int hole) {
+        int child;
+        AnyType tmp = array[hole];
+
+        for (; hole * 2 <= currentSize; hole = child) {
+            child = hole * 2;
+            // 判断右儿子是不是比左儿子小，如果是，则取左儿子下标
+            // 下面这种跟currentSize的比较方法，既避免了偶数个节点（有一个节点只有一个儿子）的情况的判断，又可以判断是否到了最后一层
+            if (child != currentSize && array[child + 1].compareTo(array[child]) < 0) {
+                child++;
+            }
+
+            if (array[child].compareTo(tmp) < 0) {
+                array[hole] = array[child];
+            } else {
+                break;
+            }
+        }
+
+        array[hole] = tmp;
     }
 
     private void buildHeap() {
+        array = (AnyType[]) new Object[DEFAULT_CAPACITY];
+        currentSize = 0;
     }
 
     private void enlargeArray(int newSize) {
+        AnyType[] newArray = (AnyType[]) new Object[newSize];
+        for (int i = 0; i < array.length; i++) {
+            newArray[i] = array[i];
+        }
+
+        array = newArray;
+    }
+
+    /**
+     * 返回最小值
+     *
+     * @return
+     */
+    private AnyType findMin() {
+        return array[1];
     }
 }
